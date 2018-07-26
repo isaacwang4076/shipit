@@ -1,4 +1,5 @@
 module.exports = function(controller) {
+	console.log("esketit yaboi")
 
 	
 			// var AWS = require('aws-sdk');
