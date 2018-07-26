@@ -1,0 +1,262 @@
+module.exports = function(controller) {
+  return;
+  var bot = controller.spawn({
+    token: process.env.botToken});
+  
+  // members = get_workspace_members();
+
+  // nonBots = get_non_bots(members);
+
+  // nonBots.forEach(function(member) {
+  //   console.log("Sending message to " + member.real_name)
+  //   start_aotd_conversation(member.id)
+  // })
+  start_aotd_conversation_with_workplace(bot);
+  //test_aws();
+  test();
+};
+
+function start_aotd_conversation_with_workplace(bot) {
+
+  var request = require('request')
+
+  var headers = {
+    'Content-type': 'application/x-www-form-urlencoded'
+  };
+
+  var dataString = 'token=' + process.env.botToken;
+
+  var options = {
+    url: 'https://slack.com/api/users.list',
+    method: 'POST',
+    headers: headers,
+    body: dataString
+  };
+  
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode == 200) {
+      members = JSON.parse(body).members;
+      members.forEach(function(member) {
+        console.log(member.real_name);
+      })
+      nonBots = get_non_bots(members);
+      console.log(nonBots[0]);
+      nonBots.forEach(function(member) {
+        console.log("Sending message to " + member.real_name)
+        start_aotd_conversation(bot, member, function(answers_dict) {
+          upload_aotd(member, answers_dict);
+        })
+      })
+    } else {
+      console.log('fuck');
+    }
+  })
+}
+
+
+
+function test() {
+  test_member = { id: 'UBXAAQF2Q',
+  team_id: 'TBX13JJGH',
+  name: 'iwang',
+  deleted: false,
+  color: '9f69e7',
+  real_name: 'Isaac Wang',
+  tz: 'America/Los_Angeles',
+  tz_label: 'Pacific Daylight Time',
+  tz_offset: -25200,
+  profile: 
+   { title: '',
+     phone: '',
+     skype: '',
+     real_name: 'Isaac Wang',
+     real_name_normalized: 'Isaac Wang',
+     display_name: 'iwang',
+     display_name_normalized: 'iwang',
+     status_text: '',
+     status_emoji: '',
+     status_expiration: 0,
+     avatar_hash: '7c747fdbb1f1',
+     image_original: 'https://avatars.slack-edge.com/2018-07-26/407108608214_7c747fdbb1f131c1e0fb_original.jpg',
+     email: 'iwang@atlassian.com',
+     first_name: 'Isaac',
+     last_name: 'Wang',
+     image_24: 'https://avatars.slack-edge.com/2018-07-26/407108608214_7c747fdbb1f131c1e0fb_24.jpg',
+     image_32: 'https://avatars.slack-edge.com/2018-07-26/407108608214_7c747fdbb1f131c1e0fb_32.jpg',
+     image_48: 'https://avatars.slack-edge.com/2018-07-26/407108608214_7c747fdbb1f131c1e0fb_48.jpg',
+     image_72: 'https://avatars.slack-edge.com/2018-07-26/407108608214_7c747fdbb1f131c1e0fb_72.jpg',
+     image_192: 'https://avatars.slack-edge.com/2018-07-26/407108608214_7c747fdbb1f131c1e0fb_192.jpg',
+     image_512: 'https://avatars.slack-edge.com/2018-07-26/407108608214_7c747fdbb1f131c1e0fb_512.jpg',
+     image_1024: 'https://avatars.slack-edge.com/2018-07-26/407108608214_7c747fdbb1f131c1e0fb_1024.jpg',
+     status_text_canonical: '',
+     team: 'TBX13JJGH',
+     is_custom_image: true },
+  is_admin: true,
+  is_owner: true,
+  is_primary_owner: true,
+  is_restricted: false,
+  is_ultra_restricted: false,
+  is_bot: false,
+  updated: 1532634538,
+  is_app_user: false }
+
+  test_answers_dict = {}
+  test_answers_dict['description'] = 'yaboi'
+  test_answers_dict['spirit animal'] = 'chicken'
+  test_answers_dict['motto'] = 'esketit'
+  test_answers_dict['office'] = 'mtv'
+
+  upload_aotd(test_member, test_answers_dict)
+}
+
+function upload_aotd(member, info_dict) {
+  console.log("uploading aotd for " + member.real_name);
+
+  var AWS = require('aws-sdk');
+  var s3 = new AWS.S3();
+
+  // Bucket names must be unique across all S3 users
+
+  var bucket = 'meetatlassian';
+
+  var key = 'aotd/' + member.id;
+
+  info_dict.new = true;
+  info_dict.id = member.id
+  info_dict.real_name = member.real_name
+  info_dict.image = get_best_image(member);
+
+  params = {Bucket: bucket, Key: key, Body: JSON.stringify(info_dict), ContentType: "application/json"};
+
+  s3.putObject(params, function(err, data) {
+
+    if (err) {
+
+      console.log(err)
+
+    } else {
+
+      console.log("Successfully uploaded data key: " + key);
+
+    }
+
+  });
+}
+
+function get_best_image(member) {
+  var best_num = 0
+  var best_image = null
+  for (var attribute in member.profile) {
+    console.log('assessing attribute: ' + attribute);
+    if (attribute.startsWith('image_')) {
+      var num = parseInt(attribute.substring(6))
+      console.log('num is: ' + num)
+      if (num > best_num) {
+        console.log(num + ' is greater than ' + best_num)
+        best_num = num
+        best_image = member.profile[attribute]
+      }
+    }
+  }
+  console.log('best_image is: ' + best_image)
+  return best_image
+}
+
+function get_non_bots(members) {
+  nonBots = []
+  members.forEach(function(member) {
+    if (!member.is_bot) {
+      nonBots.push(member)
+    }
+  })
+  return nonBots
+}
+
+function start_aotd_conversation(bot, member, on_answers_collected) {
+  bot.api.im.open({
+    user: member.id,
+    token: process.env.botToken
+  }, (err, res) => {
+    if (err) {
+      bot.botkit.log('Failed to open IM with user', err)
+    }
+    console.log(res);
+    bot.startConversation({
+      user: member.id,
+      channel: res.channel.id,
+      text: 'WOWZA... 1....2'
+    }, (err, convo) => {
+      if (err == null) {
+        console.log("Successfully started convertsation with user " + member.real_name);
+      }
+
+      var answers_dict = {}
+
+      // // create a path for when a user says YES
+      // convo.addMessage({
+      //         text: 'Awesome! First up: what office are you in?'
+      // },'yes_thread');
+
+      convo.addMessage({
+
+      })
+
+      // create a path for when a user says NO
+      // mark the conversation as unsuccessful at the end
+      convo.addMessage({
+          text: 'No problem! Have a good day.',
+          action: 'stop', // this marks the converation as unsuccessful
+      },'no_thread');
+
+      // create a path where neither option was matched
+      // this message has an action field, which directs botkit to go back to the `default` thread after sending this message.
+      convo.addMessage({
+          text: 'Sorry I did not understand. Say `yes` or `no`',
+          action: 'default',
+      },'bad_response');
+
+      // Create a yes/no question in the default thread...
+      convo.ask('Hey ' + member.real_name + "! You've been selected to be Atlassian of the Day. Got a minute to answer a few quick questions?", [
+          {
+              pattern:  bot.utterances.yes,
+              callback: function(response, convo) {
+                askInfo(convo, 'Awesome. To start, please describe yourself in a couple sentences.', answers_dict, 'description', function(response, convo) {
+                  askInfo(convo, 'Great! Now, what\'s your spirit animal?', answers_dict, 'spirit_animal', function(response, convo) {
+                    askInfo(convo, 'Sweet. What\'s your motto?', answers_dict, 'motto', function(response, convo) {
+                      askInfo(convo, 'One last thing: which office are you in?', answers_dict, 'office', function(response, convo) {
+                        console.log(answers_dict);
+                        convo.say('Perfect. Thanks for participating! You\'ll see yourself in #atlassianoftheday within a week or so.');
+                        convo.next();
+                        on_answers_collected(answers_dict);
+                      })
+                    })
+                  })
+                })
+              },
+          },
+          {
+              pattern:  bot.utterances.no,
+              callback: function(response, convo) {
+                  convo.gotoThread('no_thread');
+              },
+          },
+          {
+              default: true,
+              callback: function(response, convo) {
+                  convo.gotoThread('bad_response');
+              },
+          }
+      ]);
+    });
+  })
+}
+
+function askInfo(convo, msg, dict, key, on_response) {
+  console.log('askInfo called with msg: ' + msg);
+  convo.ask(msg, function(response, convo) {
+    console.log('yaboi')
+    dict[key] = response.text
+    on_response(response, convo)
+  })
+  convo.next()
+}
