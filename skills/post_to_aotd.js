@@ -1,11 +1,11 @@
 module.exports = function(controller) {
 
 	
-			var AWS = require('aws-sdk');
-			var s3 = new AWS.S3();
-			var bucket = 'meetatlassian';
-			var key = 'aotd/' + info_dict.id;
-			
+			// var AWS = require('aws-sdk');
+			// var s3 = new AWS.S3();
+			// var bucket = 'meetatlassian';
+			// var key = 'aotd/' + info_dict.id;
+
 	console.log("post_to_aotd.js");
 	var bot = controller.spawn({
 		token: process.env.botToken});
@@ -42,7 +42,7 @@ function pull_from_s3() {
 		}
 	});
 
-	setTimeout(post_aotd(info_dict_list), 5 * 1000);
+	//setTimeout(post_aotd(info_dict_list), 5 * 1000);
 }
 
 function post_aotd(info_dict_list) {
