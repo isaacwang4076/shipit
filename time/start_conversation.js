@@ -37,9 +37,9 @@ function start_aotd_conversation_with_workplace(bot) {
   
   request(options, function(error, response, body) {
     if (!error && response.statusCode == 200) {
-      members = JSON.parse(body).members;
-
-      nonBots = get_non_bots(members);
+      var members = JSON.parse(body).members;
+      console.log(JSON.parse(body));
+      var nonBots = get_non_bots(members);
       nonBots.forEach(function(member) {
         console.log("Sending message to " + member.real_name)
         start_aotd_conversation(bot, member, function(answers_dict) {
@@ -55,7 +55,7 @@ function start_aotd_conversation_with_workplace(bot) {
 
 
 function test() {
-  test_member = { 
+  var test_member = { 
     //id: 'UBXAAQF2Q',
     id: 'test_id_3',
   team_id: 'TBX13JJGH',
@@ -101,7 +101,7 @@ function test() {
   is_app_user: false,
   updated: 1532646942 }
 
-  test_answers_dict = {}
+  var test_answers_dict = {}
   test_answers_dict['description'] = 'yaboi'
   test_answers_dict['spirit animal'] = 'chicken'
   test_answers_dict['motto'] = 'esketit'
