@@ -13,7 +13,7 @@ module.exports = function(controller) {
   // })
   start_aotd_conversation_with_workplace(bot);
   //test_aws();
-  test();
+  //test();
 };
 
 function start_aotd_conversation_with_workplace(bot) {
@@ -56,7 +56,9 @@ function start_aotd_conversation_with_workplace(bot) {
 
 
 function test() {
-  test_member = { id: 'UBXAAQF2Q',
+  test_member = { 
+    //id: 'UBXAAQF2Q',
+    id: 'test_id_3',
   team_id: 'TBX13JJGH',
   name: 'iwang',
   deleted: false,
@@ -66,7 +68,7 @@ function test() {
   tz_label: 'Pacific Daylight Time',
   tz_offset: -25200,
   profile: 
-   { title: '',
+   { title: 'Software Engineering Intern',
      phone: '',
      skype: '',
      real_name: 'Isaac Wang',
@@ -97,8 +99,8 @@ function test() {
   is_restricted: false,
   is_ultra_restricted: false,
   is_bot: false,
-  updated: 1532634538,
-  is_app_user: false }
+  is_app_user: false,
+  updated: 1532646942 }
 
   test_answers_dict = {}
   test_answers_dict['description'] = 'yaboi'
@@ -125,6 +127,8 @@ function upload_aotd(member, info_dict) {
   info_dict.id = member.id
   info_dict.real_name = member.real_name
   info_dict.image = get_best_image(member);
+  info_dict.title = member.profile.title;
+  info_dict.display_name = member.profile.display_name;
 
   params = {Bucket: bucket, Key: key, Body: JSON.stringify(info_dict), ContentType: "application/json"};
 
@@ -221,7 +225,7 @@ function start_aotd_conversation(bot, member, on_answers_collected) {
               pattern:  bot.utterances.yes,
               callback: function(response, convo) {
                 askInfo(convo, 'Awesome. To start, please describe yourself in a couple sentences.', answers_dict, 'description', function(response, convo) {
-                  askInfo(convo, 'Great! Now, what\'s your spirit animal?', answers_dict, 'spirit_animal', function(response, convo) {
+                  askInfo(convo, 'Great! Now, what\'s your spirit animal?', answers_dict, 'spirit animal', function(response, convo) {
                     askInfo(convo, 'Sweet. What\'s your motto?', answers_dict, 'motto', function(response, convo) {
                       askInfo(convo, 'One last thing: which office are you in?', answers_dict, 'office', function(response, convo) {
                         console.log(answers_dict);

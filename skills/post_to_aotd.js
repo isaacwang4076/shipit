@@ -69,16 +69,47 @@ function pull_from_s3() {
 		}
 	});
 
-	setTimeout(function() {
-		post_aotd(info_dict_list)
-	}, 3 * 1000);
+	setInterval(function() {
+		select_and_post_aotd(info_dict_list)
+	}, 10 * 1000);
+
+	// setInterval(function() {
+	// 	select_and_post_aotd(info_dict_list)
+	// }, 10 * 1000);
 }
 
-function get_aotd_msg(info_dict) {
-	
+function post_aotd(convo, info_dict) {
+	var date = new Date();
+	var date_string = "(" + (date.getMonth() + 1) + "/" + date.getDate() + ")"	
+	var first_name = info_dict.real_name.split(" ")[0]
+	console.log(info_dict)
+	//convo.say(info_dict.real_name + " is the Atlassian of the Day! " + date_string);
+	convo.say({"text": "*" + info_dict.real_name + " is the Atlassian of the Day! " + date_string + "*",
+		"attachments": [
+        {
+            "title": info_dict['title'] + " at " + info_dict['office'],
+            // "fields": [
+            //     {
+            //         "title": "Volume",
+            //         "value": "1",
+            //         "short": true
+            //     },
+            //     {
+            //         "title": "Issue",
+            //         "value": "3",
+            // "short": true
+            //     }
+            // ],
+            // "author_name": "Stanford S. Strickland",
+            // "author_icon": "http://a.slack-edge.com/7f18https://a.slack-edge.com/bfaba/img/api/homepage_custom_integrations-2x.png",
+            "image_url": info_dict.image
+        }
+    ]})
+    convo.say({"text": "*About " + first_name + "*\n" + info_dict['description'] + "\n*Spirit animal:* " 
+    	+ info_dict['spirit animal']+ "\n*Motto:* " + info_dict['motto'] + "\nGot something in common? Start a conversation with <@" + info_dict.id + ">"})
 }
 
-function post_aotd(info_dict_list) {
+function select_and_post_aotd(info_dict_list) {
 	console.log("posting aotd");
 	info_dict_list = shuffle(info_dict_list);
 	for (var i = 0; i < info_dict_list.length; i++) {
@@ -93,8 +124,9 @@ function post_aotd(info_dict_list) {
 		    	text: 'WOWZA... 1....2'
 		    }, (err, convo) => {
 		    	console.log(err)
-		    	convo.say("esketit")
-			})
+		    	post_aotd(convo, info_dict)
+		    })
+
 			break;
 
 			// bot.api.im.open({
