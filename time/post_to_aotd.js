@@ -5,13 +5,6 @@ var bot;
 var aotd_channel_id = "CBWTT0QBA";
 
 module.exports = function(controller) {
-	return;
-	console.log("esketit yaboi")
-
-	console.log("post_to_aotd.js");
-
-	//get_channels();
-
 	bot = controller.spawn({
 		token: process.env.botToken});
 	pull_from_s3();
@@ -58,21 +51,23 @@ function pull_from_s3() {
 			var num_objects = data.Contents.length;
 			for (var i = 0; i < num_objects; i++) {
 				var object = data.Contents[i]
-				params = {Bucket: bucket, Key: object.Key}
-				s3.getObject(params, function(err, data) {
-		    		if (err) console.log(err, err.stack); // an error occurred
-		    		else {
-		    			var info_dict = JSON.parse(data.Body);
-		    			info_dict_list.push(info_dict);
-		    		}
-				});
+				if ((object.Key).startsWith('aotd')) {
+					params = {Bucket: bucket, Key: object.Key}
+					s3.getObject(params, function(err, data) {
+			    		if (err) console.log(err, err.stack); // an error occurred
+			    		else {
+			    			var info_dict = JSON.parse(data.Body);
+			    			info_dict_list.push(info_dict);
+			    		}
+					});
+				}
 			}
 		}
 	});
 
-	setInterval(function() {
+	setTimeout(function() {
 		select_and_post_aotd(info_dict_list)
-	}, 12 * 1000);
+	}, 3 * 1000);
 
 	// setInterval(function() {
 	// 	select_and_post_aotd(info_dict_list)
@@ -83,7 +78,6 @@ function post_aotd(convo, info_dict) {
 	var date = new Date();
 	var date_string = "(" + (date.getMonth() + 1) + "/" + date.getDate() + ")"	
 	var first_name = info_dict.real_name.split(" ")[0]
-	console.log(info_dict)
 	//convo.say(info_dict.real_name + " is the Atlassian of the Day! " + date_string);
 	convo.say({"text": "*" + info_dict.real_name + " is the Atlassian of the Day! " + date_string + "*",
 		"attachments": [
@@ -94,36 +88,33 @@ function post_aotd(convo, info_dict) {
     ]})
     convo.say({"text": "*About " + first_name + "*\n" + info_dict['description'] + "\n*Spirit animal:* " 
     	+ info_dict['spirit animal']+ "\n*Motto:* " + info_dict['motto'] + "\nGot something in common? Start a conversation with <@" + info_dict.id + ">"})
+
 }
 
 function select_and_post_aotd(info_dict_list) {
-	console.log("posting aotd");
+	console.log("Picking an Atlassian of the Day...");
 	info_dict_list = shuffle(info_dict_list);
 	for (var i = 0; i < info_dict_list.length; i++) {
 		var info_dict = info_dict_list[i]
-		console.log("assessing " + JSON.stringify(info_dict))
 		if (info_dict.new) {
-
-			console.log("actually posting to aotd...")
-
 			bot.startConversation({
 		    	channel: aotd_channel_id,
 		    	text: 'WOWZA... 1....2'
 		    }, (err, convo) => {
-		    	console.log(err)
 		    	post_aotd(convo, info_dict)
 		    })
 
 		    // indicate that we've posted this now
-			// var key = 'aotd/' + info_dict.id
-			// info_dict.new = false;
-			// params = {Bucket: bucket, Key: key, Body: JSON.stringify(info_dict), ContentType: "application/json"};
-			// s3.putObject(params, function(err, data) {
-			// 	if (err) {
-			// 		console.log(err)
-			// 	} else {
-			// 		console.log("Successfully uploaded data key: " + key);
-			// 	}
+			var key = 'aotd/' + info_dict.id
+			info_dict.new = false;
+			params = {Bucket: bucket, Key: key, Body: JSON.stringify(info_dict), ContentType: "application/json"};
+			s3.putObject(params, function(err, data) {
+				if (err) {
+					console.log(err)
+				} else {
+					console.log("Successfully uploaded data key: " + key);
+				}
+			});
 
 			break;
 		}

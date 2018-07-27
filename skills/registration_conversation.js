@@ -4,14 +4,13 @@ module.exports = function (controller) {
     // var bot = controller.spawn({
     //     token: process.env.botToken});
     controller.hears(['register'], 'direct_message,direct_mention', function (bot, message) {
-
         bot.startConversation(message, function (err, convo) {
-            askInfo(convo, 'Before we register you for Once-A-Week, what\'s the name of your office?', answers_dict, 'office', function (response, convo) {
+            askInfo(convo, 'Before I register you for Once-A-Week, what\'s the name of your office?', answers_dict, 'office', function (response, convo) {
                 console.log('this is the convo: '+message.user);
                 askInfo(convo, 'Great! Now, what days are you free for lunch?', answers_dict, 'available', function (response, convo) {
 
                     console.log(answers_dict);
-                    convo.say('Perfect. We\'ll let you know when your one-on-one is set up!');
+                    convo.say('Perfect. I\'ll let you know when your one-on-one is set up!');
                     convo.next();
                     upload_aotw(message.user, answers_dict);
                 })
@@ -19,6 +18,7 @@ module.exports = function (controller) {
         });
     })
 };
+
 function upload_aotw(member_id, info_dict) {
     //console.log("uploading aotd for " + member.real_name);
 

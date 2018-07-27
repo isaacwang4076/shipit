@@ -4,7 +4,7 @@ var bucket = 'meetatlassian';
 var bot;
 
 module.exports = function (controller) {
-    return;
+
     bot = controller.spawn({
     token: process.env.botToken});
 
@@ -27,7 +27,6 @@ function pull_from_s3() {
                 var object = data.Contents[i]
 
                 if((object.Key).startsWith('aotw')) {
-                    console.log(object);
                     params = {Bucket: bucket, Key: object.Key}
                     s3.getObject(params, function (err, data) {
                         if (err) console.log(err, err.stack); // an error occurred
@@ -54,7 +53,7 @@ function pull_from_s3() {
 }
 
 function match_users(info_list){
-    console.log("matching users...")
+    console.log("Pairing users...")
     var matches = [];
 
     // var day_dict = {
@@ -71,14 +70,13 @@ function match_users(info_list){
     // }
 
     while(info_list.length > 1){
-        console.log('lit')
         var first = info_list[0];
         var found_match = false;
         for(var i=1; i < info_list.length; i++){
             var other = info_list[i];
-            if(first['available']==other['available']){
-
-                var match = [first['id'], other['id'], first['available']];
+            if(first['available'].toLowerCase()==other['available'].toLowerCase()){
+                var pretty_day = first['available'].charAt(0).toUpperCase() + first['available'].toLowerCase().slice(1);
+                var match = [first['id'], other['id'], pretty_day];
                 matches.push(match)
                 info_list.splice(i,1);
                 info_list.splice(0,1);
@@ -91,7 +89,7 @@ function match_users(info_list){
         }
     }
 
-    console.log(matches);
+    console.log("Made the following matches: " + matches);
     for (var i = 0; i < matches.length; i++) {
         var match = matches[i]
         start_one_on_one(match[0], match[1], match[2])
@@ -113,22 +111,20 @@ function start_one_on_one(member_id_1, member_id_2, day) {
         headers: headers,
         body: dataString
     };
-    console.log('day is ' + day)
   
     request(options, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            console.log(JSON.parse(body))
             var channel_info = JSON.parse(body).channel;
             bot.startConversation({
                 channel: channel_info.id,
             text: 'WOWZA... 1....2'
             }, (err, convo) => {
                 if (err == null) {
-                    console.log("Successfully started multi convo");
                     get_users_name(member_id_1, function(name1) {
                         get_users_name(member_id_2, function(name2) {
                             var first_name_1 = name1.split(" ")[0]
                             var first_name_2 = name2.split(" ")[0]
+                            console.log("Started conversation between " + first_name_1 + " and " + first_name_2);
                             convo.say(first_name_1 + ", meet " + first_name_2 + ". " + first_name_2 + ", " 
                                 + first_name_1 + ". You two are getting lunch this " + day + "!")
                         })

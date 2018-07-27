@@ -1,5 +1,7 @@
+var aotd_channel_id = "CBWTT0QBA";
+
 module.exports = function(controller) {
-  return;
+
   var bot = controller.spawn({
     token: process.env.botToken});
   
@@ -11,6 +13,7 @@ module.exports = function(controller) {
   //   console.log("Sending message to " + member.real_name)
   //   start_aotd_conversation(member.id)
   // })
+  
   start_aotd_conversation_with_workplace(bot);
   //test_aws();
   //test();
@@ -36,12 +39,8 @@ function start_aotd_conversation_with_workplace(bot) {
   request(options, function(error, response, body) {
     if (!error && response.statusCode == 200) {
       members = JSON.parse(body).members;
-      members.forEach(function(member) {
-        console.log(member.real_name);
-      })
 
       nonBots = get_non_bots(members);
-      console.log(nonBots[0]);
       nonBots.forEach(function(member) {
         console.log("Sending message to " + member.real_name)
         start_aotd_conversation(bot, member, function(answers_dict) {
@@ -113,7 +112,7 @@ function test() {
 }
 
 function upload_aotd(member, info_dict) {
-  console.log("uploading aotd for " + member.real_name);
+  console.log("Uploading aotd for " + member.real_name);
 
   var AWS = require('aws-sdk');
   var s3 = new AWS.S3();
@@ -137,7 +136,7 @@ function upload_aotd(member, info_dict) {
 
     if (err) {
 
-      console.log(err)
+      //console.log(err)
 
     } else {
 
@@ -152,18 +151,14 @@ function get_best_image(member) {
   var best_num = 0
   var best_image = null
   for (var attribute in member.profile) {
-    console.log('assessing attribute: ' + attribute);
     if (attribute.startsWith('image_')) {
       var num = parseInt(attribute.substring(6))
-      console.log('num is: ' + num)
       if (num > best_num) {
-        console.log(num + ' is greater than ' + best_num)
         best_num = num
         best_image = member.profile[attribute]
       }
     }
   }
-  console.log('best_image is: ' + best_image)
   return best_image
 }
 
@@ -185,26 +180,48 @@ function start_aotd_conversation(bot, member, on_answers_collected) {
     if (err) {
       bot.botkit.log('Failed to open IM with user', err)
     }
-    console.log(res);
     bot.startConversation({
       user: member.id,
       channel: res.channel.id,
       text: 'WOWZA... 1....2'
     }, (err, convo) => {
       if (err == null) {
-        console.log("Successfully started convertsation with user " + member.real_name);
+        console.log("Successfully started conversation with user " + member.real_name);
       }
+
+      convo.setTimeout(3 * 60 * 1000)
 
       var answers_dict = {}
 
-      // // create a path for when a user says YES
-      // convo.addMessage({
-      //         text: 'Awesome! First up: what office are you in?'
-      // },'yes_thread');
+      // create a path for when a user says YES
+      convo.addMessage({
+              text: 'Awesome! First up: what office are you in?'
+      },'yes_thread');
+
+      convo.addQuestion('Awesome. To start, please describe yourself in a couple sentences.', function(response, convo) {
+        answers_dict['description'] = response.text
+        convo.gotoThread('q2')
+      }, {}, 'q1')
+
+      convo.addQuestion('Great! Now, what\'s your spirit animal?', function(response, convo) {
+        answers_dict['spirit animal'] = response.text
+        convo.gotoThread('q3')
+      }, {}, 'q2')
+
+      convo.addQuestion('Sweet. What\'s your motto?', function(response, convo) {
+        answers_dict['motto'] = response.text
+        convo.gotoThread('q4')
+      }, {}, 'q3')
+
+      convo.addQuestion('Last thing, I promise! Which office are you in?', function(response, convo) {
+        answers_dict['office'] = response.text
+        on_answers_collected(answers_dict);
+        convo.gotoThread('final')
+      }, {}, 'q4')
 
       convo.addMessage({
-
-      })
+          text: 'Perfect. Thanks for participating! You\'ll see yourself in <#' + aotd_channel_id +'> within a week or so.',
+      }, 'final');
 
       // create a path for when a user says NO
       // mark the conversation as unsuccessful at the end
@@ -221,22 +238,22 @@ function start_aotd_conversation(bot, member, on_answers_collected) {
       },'bad_response');
 
       // Create a yes/no question in the default thread...
-      convo.ask('Hey ' + member.real_name + "! You've been selected to be Atlassian of the Day. Got a minute to answer a few quick questions?", [
+      convo.ask('Hey ' + member.real_name.split(" ")[0] + "! I'm looking for an Atlassian of the Day. Got a minute to answer a few quick questions?", [
           {
               pattern:  bot.utterances.yes,
               callback: function(response, convo) {
-                askInfo(convo, 'Awesome. To start, please describe yourself in a couple sentences.', answers_dict, 'description', function(response, convo) {
-                  askInfo(convo, 'Great! Now, what\'s your spirit animal?', answers_dict, 'spirit animal', function(response, convo) {
-                    askInfo(convo, 'Sweet. What\'s your motto?', answers_dict, 'motto', function(response, convo) {
-                      askInfo(convo, 'One last thing: which office are you in?', answers_dict, 'office', function(response, convo) {
-                        console.log(answers_dict);
-                        convo.say('Perfect. Thanks for participating! You\'ll see yourself in #atlassianoftheday within a week or so.');
-                        convo.next();
-                        on_answers_collected(answers_dict);
-                      })
-                    })
-                  })
-                })
+                convo.gotoThread('q1')
+                // askInfo(convo, 'Awesome. To start, please describe yourself in a couple sentences.', answers_dict, 'description', function(response, convo) {
+                //   askInfo(convo, 'Great! Now, what\'s your spirit animal?', answers_dict, 'spirit animal', function(response, convo) {
+                //     askInfo(convo, 'Sweet. What\'s your motto?', answers_dict, 'motto', function(response, convo) {
+                //       askInfo(convo, 'Last thing, I promise! Which office are you in?', answers_dict, 'office', function(response, convo) {
+                //         convo.say('Perfect. Thanks for participating! You\'ll see yourself in <#'+ aotd_channel_id + '> within a week or so.');
+                //         convo.next();
+                //         on_answers_collected(answers_dict);
+                //       })
+                //     })
+                //   })
+                // })
               },
           },
           {
@@ -257,9 +274,7 @@ function start_aotd_conversation(bot, member, on_answers_collected) {
 }
 
 function askInfo(convo, msg, dict, key, on_response) {
-  console.log('askInfo called with msg: ' + msg);
   convo.ask(msg, function(response, convo) {
-    console.log('yaboi')
     dict[key] = response.text
     on_response(response, convo)
   })

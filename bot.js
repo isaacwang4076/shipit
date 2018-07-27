@@ -129,6 +129,8 @@ if (!process.env.clientId || !process.env.clientSecret) {
   // enable advanced botkit studio metrics
   require('botkit-studio-metrics')(controller);
 
+  var skills_dict = {}
+
   var normalizedPath = require("path").join(__dirname, "skills");
   require("fs").readdirSync(normalizedPath).forEach(function(file) {
     require("./skills/" + file)(controller);
