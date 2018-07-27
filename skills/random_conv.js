@@ -11,7 +11,7 @@ module.exports = function(controller) {
             convo.say(get_random_question());
         });
     });
-    controller.hears(['keep em comin'], 'direct_message, direct_mention', function(bot, message) {
+    controller.hears(['keep em comin', 'keep it comin'], 'direct_message, direct_mention', function(bot, message) {
         var interval_id = setInterval(function() {
           bot.startConversation(message, function(err, convo) {
               convo.say(get_random_question());
