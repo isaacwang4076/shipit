@@ -7,6 +7,7 @@ module.exports = function(controller) {
             convo.say('I make getting to know your fellow Atlassians easy. Here\'s some of what I can do:\n\
             	\t- Ask random Atlassians to be featured on <#' + aotd_channel_id + '>\n\
             	\t- Manage registration and scheduling for Once-A-Week, your weekly one-on-one with a random Atlassian (command: register)\n\
+            	\t- Rescue any awkward conversation (command: awkward)\n\
             	\t- Travel through time (command: timetravel)\n\
             	\t- Tell you what I do (commands: help, usage)');
         });
