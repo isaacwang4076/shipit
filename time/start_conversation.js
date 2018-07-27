@@ -188,8 +188,6 @@ function start_aotd_conversation(bot, member, on_answers_collected) {
         console.log("Successfully started conversation with user " + member.real_name);
       }
 
-      convo.setTimeout(30 * 1000)
-
       var answers_dict = {}
 
       // create a path for when a user says YES
