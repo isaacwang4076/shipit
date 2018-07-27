@@ -18,8 +18,8 @@ module.exports = function(controller) {
           });
         }, 2000);
         setTimeout(function() {
-          clear
-        });
+          clearInterval(interval_id)
+        }, 60 * 1000);
     });
 }
 
