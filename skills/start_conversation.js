@@ -1,5 +1,5 @@
 module.exports = function(controller) {
-  return;
+  
   var bot = controller.spawn({
     token: process.env.botToken});
   

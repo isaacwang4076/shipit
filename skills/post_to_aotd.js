@@ -5,6 +5,7 @@ var bot;
 var aotd_channel_id = "CBWTT0QBA";
 
 module.exports = function(controller) {
+	return;
 	console.log("esketit yaboi")
 
 	console.log("post_to_aotd.js");
@@ -71,7 +72,7 @@ function pull_from_s3() {
 
 	setInterval(function() {
 		select_and_post_aotd(info_dict_list)
-	}, 10 * 1000);
+	}, 12 * 1000);
 
 	// setInterval(function() {
 	// 	select_and_post_aotd(info_dict_list)
@@ -88,20 +89,6 @@ function post_aotd(convo, info_dict) {
 		"attachments": [
         {
             "title": info_dict['title'] + " at " + info_dict['office'],
-            // "fields": [
-            //     {
-            //         "title": "Volume",
-            //         "value": "1",
-            //         "short": true
-            //     },
-            //     {
-            //         "title": "Issue",
-            //         "value": "3",
-            // "short": true
-            //     }
-            // ],
-            // "author_name": "Stanford S. Strickland",
-            // "author_icon": "http://a.slack-edge.com/7f18https://a.slack-edge.com/bfaba/img/api/homepage_custom_integrations-2x.png",
             "image_url": info_dict.image
         }
     ]})
@@ -127,39 +114,18 @@ function select_and_post_aotd(info_dict_list) {
 		    	post_aotd(convo, info_dict)
 		    })
 
-			break;
-
-			// bot.api.im.open({
-			//     user: member.id,
-			//     token: process.env.botToken
-			// }, (err, res) => {
-			//     if (err) {
-			//      	bot.botkit.log('Failed to open IM with user', err)
-			//     }
-			//     console.log(res);
-			//     bot.startConversation({
-			//     	user: member.id,
-			//     	channel: res.channel.id,
-			//     	text: 'WOWZA... 1....2'
-			//     }, (err, convo) => {
-			// 	    if (err == null) {
-			// 	    	console.log("Successfully started convertsation with user " + member.real_name);
-			// 	    }
-			// 	})
-			// })
-
-			// // indicate that we've posted this now
+		    // indicate that we've posted this now
 			// var key = 'aotd/' + info_dict.id
 			// info_dict.new = false;
 			// params = {Bucket: bucket, Key: key, Body: JSON.stringify(info_dict), ContentType: "application/json"};
 			// s3.putObject(params, function(err, data) {
-		 //    	if (err) {
-		 //      		console.log(err)
-		 //    	} else {
-		 //      		console.log("Successfully uploaded data key: " + key);
-		 //    	}
+			// 	if (err) {
+			// 		console.log(err)
+			// 	} else {
+			// 		console.log("Successfully uploaded data key: " + key);
+			// 	}
 
-		 //  	});
+			break;
 		}
 	}
 }

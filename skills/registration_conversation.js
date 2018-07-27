@@ -6,40 +6,18 @@ module.exports = function (controller) {
     controller.hears(['register'], 'direct_message,direct_mention', function (bot, message) {
 
         bot.startConversation(message, function (err, convo) {
-            convo.ask('Do you want to register for meetups?',[
+            askInfo(convo, 'Before we register you for Once-A-Week, what\'s the name of your office?', answers_dict, 'office', function (response, convo) {
+                console.log('this is the convo: '+message.user);
+                askInfo(convo, 'Great! Now, what days are you free for lunch?', answers_dict, 'available', function (response, convo) {
 
-                {
-                    pattern: bot.utterances.yes,
-                    callback: function (response, convo) {
-                        askInfo(convo, 'What office are you in?', answers_dict, 'office', function (response, convo) {
-                            console.log('this is the convo: '+message.user);
-                            askInfo(convo, 'Great! Now, what day are you free for lunch?', answers_dict, 'available', function (response, convo) {
-
-                                console.log(answers_dict);
-                                convo.say('Perfect. We will set up a meeting for you');
-                                convo.next();
-                                upload_aotw(message.user, answers_dict);
-                            })
-                        })
-
-                    },
-                },
-                {
-                    pattern: bot.utterances.no,
-                    callback: function (response, convo) {
-                        convo.gotoThread('no_thread');
-                    },
-                },
-                {
-                    default: true,
-                    callback: function (response, convo) {
-                        convo.gotoThread('bad_response');
-                    },
-                }
-            ]);
+                    console.log(answers_dict);
+                    convo.say('Perfect. We\'ll let you know when your one-on-one is set up!');
+                    convo.next();
+                    upload_aotw(message.user, answers_dict);
+                })
+            })
         });
-    });
-
+    })
 };
 function upload_aotw(member_id, info_dict) {
     //console.log("uploading aotd for " + member.real_name);
