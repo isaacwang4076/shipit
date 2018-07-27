@@ -43,14 +43,6 @@ function pull_from_s3() {
             }, 3000);
         }
     });
-
-    // setInterval(function() {
-    //     select_and_post_aotd(info_dict_list)
-    // }, 10 * 1000);
-
-    // setInterval(function() {
-    // 	select_and_post_aotd(info_dict_list)
-    // }, 10 * 1000);
 }
 
 function match_users(info_list){

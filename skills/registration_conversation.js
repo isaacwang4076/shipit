@@ -5,16 +5,22 @@ module.exports = function (controller) {
     //     token: process.env.botToken});
     controller.hears(['register'], 'direct_message,direct_mention', function (bot, message) {
         bot.startConversation(message, function (err, convo) {
-            askInfo(convo, 'Before I register you for Once-A-Week, what\'s the name of your office?', answers_dict, 'office', function (response, convo) {
-                console.log('this is the convo: '+message.user);
-                askInfo(convo, 'Great! Now, what days are you free for lunch?', answers_dict, 'available', function (response, convo) {
-
-                    console.log(answers_dict);
-                    convo.say('Perfect. I\'ll let you know when your one-on-one is set up!');
-                    convo.next();
-                    upload_aotw(message.user, answers_dict);
+            message_params = message.text.split(" ");
+            if (message_params.length == 3) {
+                answers_dict['office'] = message_params[1]
+                answers_dict['available'] = message_params[2]
+                convo.say('Gotcha. I\'ll let you know when your one-on-one is set up!');
+                convo.next();
+                upload_aotw(message.user, answers_dict);
+            } else {
+                askInfo(convo, 'Thanks for your interest in Once-A-Week! Before I register you, what office are you in?', answers_dict, 'office', function (response, convo) {
+                    askInfo(convo, 'Great! Now, what days are you free for lunch?', answers_dict, 'available', function (response, convo) {
+                        convo.say('Perfect. I\'ll let you know when your one-on-one is set up!');
+                        convo.next();
+                        upload_aotw(message.user, answers_dict);
+                    })
                 })
-            })
+            }
         });
     })
 };
@@ -53,7 +59,6 @@ function upload_aotw(member_id, info_dict) {
 }
 
 function askInfo(convo, msg, dict, key, on_response) {
-    console.log('askInfo called with msg: ' + msg);
     convo.ask(msg, function (response, convo) {
         console.log('yaboi')
         dict[key] = response.text

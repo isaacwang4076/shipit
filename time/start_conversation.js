@@ -1,7 +1,6 @@
 var aotd_channel_id = "CBWTT0QBA";
 
 module.exports = function(controller) {
-
   var bot = controller.spawn({
     token: process.env.botToken});
   
@@ -189,7 +188,7 @@ function start_aotd_conversation(bot, member, on_answers_collected) {
         console.log("Successfully started conversation with user " + member.real_name);
       }
 
-      convo.setTimeout(3 * 60 * 1000)
+      convo.setTimeout(30 * 1000)
 
       var answers_dict = {}
 
@@ -221,6 +220,7 @@ function start_aotd_conversation(bot, member, on_answers_collected) {
 
       convo.addMessage({
           text: 'Perfect. Thanks for participating! You\'ll see yourself in <#' + aotd_channel_id +'> within a week or so.',
+          action: 'stop'
       }, 'final');
 
       // create a path for when a user says NO

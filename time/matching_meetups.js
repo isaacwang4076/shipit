@@ -56,19 +56,6 @@ function match_users(info_list){
     console.log("Pairing users...")
     var matches = [];
 
-    // var day_dict = {
-    //     'monday' : [],
-    //     'tuesday' : [],
-    //     'wednesday' : [],
-    //     'thursday' : [],
-    //     'friday' : []
-    // }
-
-    // for (var entry in info_list) {
-    //     console.log(entry)
-    //     day_dict[entry.available]
-    // }
-
     while(info_list.length > 1){
         var first = info_list[0];
         var found_match = false;
