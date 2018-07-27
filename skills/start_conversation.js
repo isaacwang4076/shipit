@@ -1,5 +1,5 @@
 module.exports = function(controller) {
-  
+  return;
   var bot = controller.spawn({
     token: process.env.botToken});
   
@@ -39,6 +39,7 @@ function start_aotd_conversation_with_workplace(bot) {
       members.forEach(function(member) {
         console.log(member.real_name);
       })
+
       nonBots = get_non_bots(members);
       console.log(nonBots[0]);
       nonBots.forEach(function(member) {
